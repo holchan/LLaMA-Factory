@@ -76,6 +76,10 @@ def run_dpo(
         **tokenizer_module,
     )
 
+    # Debug statements to check data types before training
+    for name, param in model.named_parameters():
+        print(f"Parameter {name} dtype: {param.dtype}")
+
     # Training
     if training_args.do_train:
         train_result = trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
