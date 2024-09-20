@@ -70,6 +70,11 @@ def get_unsloth_gradient_checkpointing_func() -> Callable:
             with torch.enable_grad():
                 (output,) = ctx.forward_function(hidden_states, *ctx.args)
 
+            # Debug statements to check data types
+            print(f"grad_output dtype: {grad_output.dtype}")
+            print(f"hidden_states dtype: {hidden_states.dtype}")
+            print(f"output dtype: {output.dtype}")
+
             # Ensure the data types are consistent
             grad_output = grad_output.to(hidden_states.dtype)
             torch.autograd.backward(output, grad_output)
