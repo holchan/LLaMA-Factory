@@ -45,7 +45,7 @@ def get_unsloth_gradient_checkpointing_func() -> Callable:
         """
 
         @staticmethod
-        @torch.cuda.amp.custom_fwd
+        @torch.amp.custom_fwd(device_type='cuda')
         def forward(
             ctx: "torch.autograd.Function",
             forward_function: "torch.Module",
@@ -69,7 +69,8 @@ def get_unsloth_gradient_checkpointing_func() -> Callable:
             hidden_states.requires_grad_(True)
             with torch.enable_grad():
                 (output,) = ctx.forward_function(hidden_states, *ctx.args)
-
+            
+            grad_output = grad_output.to(hidden_states.dtype)
             torch.autograd.backward(output, grad_output)
             return (None, hidden_states.grad) + (None,) * len(ctx.args)
 
