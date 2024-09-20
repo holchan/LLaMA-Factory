@@ -62,14 +62,15 @@ def get_unsloth_gradient_checkpointing_func() -> Callable:
             return output
 
         @staticmethod
-        @torch.cuda.amp.custom_bwd
+        @torch.amp.custom_bwd(device_type='cuda')
         def backward(ctx: "torch.autograd.Function", grad_output: "torch.Tensor") -> "torch.Tensor":
             (hidden_states,) = ctx.saved_tensors
             hidden_states = hidden_states.to("cuda", non_blocking=True).detach()
             hidden_states.requires_grad_(True)
             with torch.enable_grad():
                 (output,) = ctx.forward_function(hidden_states, *ctx.args)
-            
+
+            # Ensure the data types are consistent
             grad_output = grad_output.to(hidden_states.dtype)
             torch.autograd.backward(output, grad_output)
             return (None, hidden_states.grad) + (None,) * len(ctx.args)
